@@ -1,6 +1,40 @@
+#Generated
 .gradle
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
 .DS_Store
 /build
+
+#Android studios
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+local.properties
+
+# Windows
+Thumbs.db
+
+# Mac users
+.DS_Store
+.idea/
+build/
+*.iml
+*.iws
+
+#Eclipse
+.classpath
+.metadata
+*.tmp
+*.bak
+*.swp
+.buildpath
+.project
+.settings/
+
+#Maven
+log/
+target/
