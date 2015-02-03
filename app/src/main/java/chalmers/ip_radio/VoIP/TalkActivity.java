@@ -15,6 +15,8 @@ import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.text.ParseException;
@@ -39,11 +41,30 @@ public class TalkActivity extends Activity {
         callReceiver = new IncomingCallReceiver();
         this.registerReceiver(callReceiver, filter);
 
+        //to keep the screen constantly on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        initManager();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (call != null) {
+            call.close();
+        }
+        closeLocalProfile();
+        if (callReceiver != null) {
+            this.unregisterReceiver(callReceiver);
+        }
+    }
+
+    /**
+     * To create a new instance of SipManager
+     */
     public void initManager(){
         if(manager == null)
             manager = SipManager.newInstance(this);
+        initProfile();
     }
 
     /**
@@ -77,7 +98,7 @@ public class TalkActivity extends Activity {
             return;
         }
         try {
-           // Log.v("SipProfile.Builder", "SipProfile.Builder");
+            // Log.v("SipProfile.Builder", "SipProfile.Builder");
             //Creating SipProfile
             SipProfile.Builder builder = new SipProfile.Builder(username,
                     domain);
@@ -143,22 +164,22 @@ public class TalkActivity extends Activity {
     /**
      * Make an outgoing call.
      */
-    public void initCall() {
+    public void initCall(View view) {
         updateStatus(sipAddress);
         try {
             SipAudioCall.Listener listener = new SipAudioCall.Listener() {
-            // Much of the client's interaction with the SIP Stack will
-            // happen via listeners. Even making an outgoing call, don't
-            // forget to set up a listener to set things up once the call is
-            // established.
-            @Override
-            public void onCallEstablished(SipAudioCall call) {
-                call.startAudio();
-                call.setSpeakerMode(true);
-                // if (call.isMuted()) {
-                // call.toggleMute();
-                // }
-                // call.toggleMute();
+                // Much of the client's interaction with the SIP Stack will
+                // happen via listeners. Even making an outgoing call, don't
+                // forget to set up a listener to set things up once the call is
+                // established.
+                @Override
+                public void onCallEstablished(SipAudioCall call) {
+                    call.startAudio();
+                    call.setSpeakerMode(true);
+                    // if (call.isMuted()) {
+                    // call.toggleMute();
+                    // }
+                    // call.toggleMute();
                     updateStatus(call, 2);
                 }
                 @Override
@@ -199,8 +220,8 @@ public class TalkActivity extends Activity {
 // Be a good citizen. Make sure UI changes fire on the UI thread.
         this.runOnUiThread(new Runnable() {
             public void run() {
-               // TextView labelView = (TextView) findViewById(R.id.sipLabel);
-              // labelView.setText(status);
+                // TextView labelView = (TextView) findViewById(R.id.sipLabel);
+                // labelView.setText(status);
             }
         });
     }
