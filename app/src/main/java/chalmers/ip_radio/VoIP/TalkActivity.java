@@ -1,6 +1,9 @@
 package chalmers.ip_radio.VoIP;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.net.sip.SipAudioCall;
 import android.net.sip.SipException;
@@ -15,9 +18,15 @@ import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.text.ParseException;
 
@@ -26,16 +35,29 @@ import chalmers.ip_radio.R;
 /**
  * Created by Vivi on 2015-01-30.
  */
-public class TalkActivity extends Activity {
+public class TalkActivity extends Activity implements View.OnTouchListener {
     public SipManager manager = null;
     public SipProfile profile = null;
     public String sipAddress = null;
     public SipAudioCall call = null;
     public IncomingCallReceiver callReceiver;
 
+    private static final int CALL_ADDRESS = 1;
+    private static final int SET_AUTH_INFO = 2;
+    private static final int UPDATE_SETTINGS_DIALOG = 3;
+    private static final int HANG_UP = 4;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_talk);
+        ToggleButton pushToTalkButton = (ToggleButton) findViewById(R.id.pushToTalk);
+        pushToTalkButton.setOnTouchListener(this);
+
+        // Set up the intent filter. This will be used to fire an
+        // IncomingCallReceiver when someone calls the SIP address used by this
+        // application.
         IntentFilter filter = new IntentFilter();
         filter.addAction("android.SipDemo.INCOMING_CALL");
         callReceiver = new IncomingCallReceiver();
@@ -43,6 +65,14 @@ public class TalkActivity extends Activity {
 
         //to keep the screen constantly on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        initManager();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    // When we get back from the preference setting Activity, assume
+    // settings have changed, and re-login with new auth info.
         initManager();
     }
 
@@ -164,7 +194,7 @@ public class TalkActivity extends Activity {
     /**
      * Make an outgoing call.
      */
-    public void initCall(View view) {
+    public void initCall() {
         updateStatus(sipAddress);
         try {
             SipAudioCall.Listener listener = new SipAudioCall.Listener() {
@@ -220,8 +250,8 @@ public class TalkActivity extends Activity {
 // Be a good citizen. Make sure UI changes fire on the UI thread.
         this.runOnUiThread(new Runnable() {
             public void run() {
-                // TextView labelView = (TextView) findViewById(R.id.sipLabel);
-                // labelView.setText(status);
+                 TextView labelView = (TextView) findViewById(R.id.sipLabel);
+                 labelView.setText(status);
             }
         });
     }
@@ -244,5 +274,104 @@ public class TalkActivity extends Activity {
             updateStatus("Dial call :- " + useName + "@"
                     + call.getPeerProfile().getSipDomain());
         }
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(0, CALL_ADDRESS, 0, "Call someone");
+        menu.add(0, SET_AUTH_INFO, 0, "Edit your SIP Info.");
+        menu.add(0, HANG_UP, 0, "End Current Call.");
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case CALL_ADDRESS:
+                showDialog(CALL_ADDRESS);
+                break;
+            case SET_AUTH_INFO:
+                updatePreferences();
+                break;
+            case HANG_UP:
+                if(call != null) {
+                    try {
+                        call.endCall();
+                    } catch (SipException se) {
+                        Log.d("WalkieTalkieActivity/onOptionsItemSelected",
+                                "Error ending call.", se);
+                    }
+                    call.close();
+                }
+                break;
+        }
+        return true;
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+            case CALL_ADDRESS:
+                LayoutInflater factory = LayoutInflater.from(this);
+                final View textBoxView = factory.inflate(R.layout.call_address_dialog, null);
+                return new AlertDialog.Builder(this)
+                        .setTitle("Call Someone.")
+                        .setView(textBoxView)
+                        .setPositiveButton(
+                                android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        EditText textField = (EditText)
+                                                (textBoxView.findViewById(R.id.calladdress_edit));
+                                        sipAddress = textField.getText().toString();
+                                        initCall();
+                                    }
+                                })
+                        .setNegativeButton(
+                                android.R.string.cancel, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+// Noop.
+                                    }
+                                })
+                        .create();
+            case UPDATE_SETTINGS_DIALOG:
+                return new AlertDialog.Builder(this)
+                        .setMessage("Please update your SIP Account Settings.")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                updatePreferences();
+                            }
+                        })
+                        .setNegativeButton(
+                                android.R.string.cancel, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+// Noop.
+                                    }
+                                })
+                        .create();
+        }
+        return null;
+    }
+
+    public void updatePreferences() {
+        Intent settingsActivity = new Intent(getBaseContext(),
+                SipSettings.class);
+        startActivity(settingsActivity);
+    }
+
+    /**
+     * Updates whether or not the user's voice is muted, depending on whether the button is pressed.
+     * @param v The View where the touch event is being fired.
+     * @param event The motion to act on.
+     * @return boolean Returns false to indicate that the parent view should handle the touch event
+     * as it normally would.
+     */
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (call == null) {
+            return false;
+        } else if (event.getAction() == MotionEvent.ACTION_DOWN && call != null && call.isMuted()) {
+            call.toggleMute();
+        } else if (event.getAction() == MotionEvent.ACTION_UP && !call.isMuted()) {
+            call.toggleMute();
+        }
+        return false;
     }
 }

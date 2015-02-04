@@ -61,6 +61,10 @@
             android:name=".TalkActivity"
             android:label="@string/title_activity_talk" >
         </activity>
+        <activity
+            android:name=".VoIP.SipSettings"
+            android:label="@string/title_activity_sip_settings" >
+        </activity>
     </application>
 
 </manifest>
