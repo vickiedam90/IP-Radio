@@ -4,6 +4,10 @@ package chalmers.ip_radio.VoIP;
 import android.os.Bundle;
 import chalmers.ip_radio.R;
 import android.preference.PreferenceActivity;
+import android.view.View;
+
+import static chalmers.ip_radio.R.xml.preferences;
+
 /**
  * Handles SIP authentication settings for the Walkie Talkie app.
  */
