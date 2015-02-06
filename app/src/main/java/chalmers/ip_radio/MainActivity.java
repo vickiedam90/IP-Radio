@@ -17,8 +17,12 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
     }
 
-    public void buttonPress(View view){
+    public void map1(View view){
         Intent intent = new Intent(this, MapActivity.class);
+        startActivity(intent);
+    }
+    public void map2(View view){
+        Intent intent = new Intent(this, MapActivity2.class);
         startActivity(intent);
     }
 }

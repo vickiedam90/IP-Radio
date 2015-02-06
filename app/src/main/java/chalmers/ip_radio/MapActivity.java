@@ -1,82 +1,97 @@
 package chalmers.ip_radio;
 
-import android.app.Activity;
-import android.location.Location;
-import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
+import android.support.v4.app.FragmentActivity;
+import android.os.Bundle;
+import android.view.View;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-
-public class MapActivity extends Activity {
-    static final LatLng point1 = new LatLng(57.7 , 11.9);
-    static final LatLng point2 = new LatLng(57.6 , 12);
-    GoogleMap map;
-    Marker mark;
-    Location location;
-    CameraUpdateFactory CUF;
-    /*
-    CameraUpdate center = CUF.newLatLng(new LatLng(40.76793169992044,
-                    -73.98180484771729));
-    CameraUpdate zoom = CUF.zoomTo(15);
-    */
+import java.util.HashMap;
 
 
+public class MapActivity extends FragmentActivity {
+    private LatLng latlng_gbg = new LatLng(57.7000, 11.9667);
+    private GoogleMap map;
+    private Marker mark;
+    private Location myLocation, location, mLastLocation;
+    private LatLng myLatLng;
+    private LocationManager locationManager;
+    private GoogleApiClient.Builder mGoogleApiClient;
+    public HashMap<String, UserOnMap> userLocations; //How too keep multiple user locations?
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        try{
+        initiateMap();
+        centerMapOnMyLocation();
+    }
+
+    private void initiateMap() {
+        try {
             if (map == null) {
-                map = ((MapFragment) getFragmentManager().
+                map = ((SupportMapFragment) getSupportFragmentManager().
                         findFragmentById(R.id.map)).getMap();
             }
+
             map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
             map.setMyLocationEnabled(true);
 
-            //centerMapOnMyLocation();
-
-            //map.moveCamera(center);
-            //map.animateCamera(zoom);
-
-
-            mark = map.addMarker(new MarkerOptions()
-                .position(point2)
-                .title("TestTitle")
-                .snippet("TestSnippet"));
-
-
-            Marker TP = map.addMarker(new MarkerOptions().
-                    position(point1).title("TutorialsPoint"));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void centerMapOnMyLocation() {
+    public void addMarker(String user, LatLng latLng){
+        //userLocations.put(user, new UserOnMap(map, user, latLng));
+    }
 
-        map.setMyLocationEnabled(true);
+    public void updateMarker(String user, LatLng latLng){
 
-        //LatLng location = (Location) map.getMyLocation();
+    }
 
-        if (location != null) {
-            LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
-            map.animateCamera(CUF.newLatLngZoom(myLocation, 16));
+    public void removeMarker(String user){ //remove user from
+
+    }
+
+    private void centerMapOnMyLocation(){
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        //Criteria object to retrieve provider
+        Criteria criteria = new Criteria();
+
+        //Get the name of the best provider
+        String provider = locationManager.getBestProvider(criteria, true);
+
+        //Get current location
+        myLocation = locationManager.getLastKnownLocation(provider);
+
+        //"Convert" to LatLng
+        myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+
+        try {
+            map.moveCamera(CameraUpdateFactory.newLatLng(myLatLng));
+            map.animateCamera(CameraUpdateFactory.zoomTo(16));
+            /*
+            mark = map.addMarker(new MarkerOptions().position(myLatLng)
+                    .title("You")
+                    .snippet("Probably"));
+            */
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-    //while loop, uppdatera positioner?
-
-
-
 }

@@ -65,6 +65,10 @@
             android:name=".VoIP.SipSettings"
             android:label="@string/title_activity_sip_settings" >
         </activity>
+        <activity
+            android:name=".MapActivity2"
+            android:label="@string/title_activity_map_activity2" >
+        </activity>
     </application>
 
 </manifest>

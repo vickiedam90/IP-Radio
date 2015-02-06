@@ -9,4 +9,6 @@
     <string name="title_activity_sip_settings">SipSettings</string>
     <string name="contactAddress">SIP Address to contact</string>
     <string name="talk">Talk</string>
+    <string name="title_activity_map_activity2">MapActivity2</string>
+
 </resources>

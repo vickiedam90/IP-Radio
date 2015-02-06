@@ -6,10 +6,17 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/mainButton"
-        android:text="@string/hello_world"
+        android:id="@+id/button1"
+        android:text="Map1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="buttonPress"/>
+        android:onClick="map1"/>
 
+    <Button
+        android:id="@+id/button2"
+        android:text="Map2"
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="map2"/>
 </RelativeLayout>
