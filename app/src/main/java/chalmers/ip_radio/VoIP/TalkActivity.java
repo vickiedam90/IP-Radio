@@ -3,12 +3,12 @@ package chalmers.ip_radio.VoIP;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.net.sip.SipAudioCall;
 import android.net.sip.SipException;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -19,6 +19,7 @@ import android.net.sip.SipRegistrationListener;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -123,8 +124,7 @@ public class TalkActivity extends Activity implements View.OnTouchListener {
 
         if (username.length() == 0 || domain.length() == 0
                 || password.length() == 0) {
-            //popup to show a dialog? "UPDATE_SETTINGS_DIALOG = 3 in demo"
-            //hardcode the name, pw and domain
+            showDialog(UPDATE_SETTINGS_DIALOG);
             return;
         }
         try {
@@ -209,7 +209,7 @@ public class TalkActivity extends Activity implements View.OnTouchListener {
                     // if (call.isMuted()) {
                     // call.toggleMute();
                     // }
-                    // call.toggleMute();
+                    call.toggleMute();
                     updateStatus(call, 2);
                 }
                 @Override

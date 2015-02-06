@@ -14,16 +14,15 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.USE_SIP" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <uses-feature
-        android:name="android.hardware.sip.voip"
-        android:required="true" />
+        android:name="android.hardware.sip.voip" android:required="true" />
     <uses-feature
-        android:name="android.hardware.wifi"
-        android:required="true" />
+        android:name="android.hardware.wifi" android:required="true" />
     <uses-feature
-        android:name="android.hardware.microphone"
-        android:required="true" />
+        android:name="android.hardware.microphone" android:required="true" />
 
     <receiver
         android:name=".IncomingCallReceiver"
@@ -58,12 +57,18 @@
             android:label="@string/title_activity_map" >
         </activity>
         <activity
-            android:name=".TalkActivity"
-            android:label="@string/title_activity_talk" >
+            android:name=".VoIP.TalkActivity"
+            android:label="@string/title_activity_talk"
+            android:configChanges="orientation|keyboardHidden">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+        </intent-filter>
+
         </activity>
         <activity
             android:name=".VoIP.SipSettings"
-            android:label="@string/title_activity_sip_settings" >
+            android:label="set_preferences" >
         </activity>
         <activity
             android:name=".MapActivity2"
