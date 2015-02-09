@@ -23,12 +23,18 @@ public class UserOnMap {
         this.user = user;
         this.latLng = latLng;
     }
+    private void UserOnMap(GoogleMap map, String user, double lat, double lng){
+        this.map = map;
+        this.user = user;
+        latLng = new LatLng(lat, lng);
+    }
 
     private void setMarker() {
         if (latLng != null) {
             marker = map.addMarker(new MarkerOptions().position(latLng)
                     .title("You")
                     .snippet("Probably"));
+            marker.hideInfoWindow();
         }
     }
     private Marker getMarker(){
