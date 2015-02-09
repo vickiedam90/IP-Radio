@@ -1,13 +1,16 @@
 package chalmers.ip_radio;
 
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Criteria;
@@ -25,17 +28,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.HashMap;
 
 
-public class MapActivity extends FragmentActivity {
+public class MapActivity extends FragmentActivity  implements LocationListener, LocationSource {
     private LatLng latlng_gbg = new LatLng(57.7000, 11.9667);
     private LatLng latlng_gbg2 = new LatLng(57.7000, 11.9666);
     private GoogleMap map;
-    private Marker mark, marker;
+    private Marker mark, marker, tempMarker;
     private Location myLocation, location, mLastLocation;
     private LatLng myLatLng, myLatLng1, myLatLng2;
     private LocationManager locationManager;
     private GoogleApiClient.Builder mGoogleApiClient;
-    public HashMap<String, UserOnMap> userLocations; //How too keep multiple user locations?
+    private HashMap<String, UserOnMap> userLocations; //How too keep multiple user locations?
     private HashMap<String, Marker> usersOnMap = new HashMap<String, Marker>();
+    private Context context = this;
+    private LocationSource.OnLocationChangedListener mListener;
 
     AlertDialog.Builder builder;
 
@@ -66,76 +71,50 @@ public class MapActivity extends FragmentActivity {
             map.getUiSettings().setTiltGesturesEnabled(false);
             map.getUiSettings().setRotateGesturesEnabled(false);
 
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void addMarker(String user, LatLng latLng){
-        //userLocations.put(user, new UserOnMap(map, user, latLng));
-        /*
-        if (latLng != null) {
-            marker = map.addMarker(new MarkerOptions().position(latLng)
-                    .title(user)
-                            //.snippet("Probably")
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.truck32px)));
-            marker.showInfoWindow();
-        }
-        */
 
+        //Creating mark
         Marker marker = map.addMarker(new MarkerOptions()
                 .position(latLng)
                 .title("Call " + user + "?")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.truck32px)));
         usersOnMap.put(user, marker);
-        usersOnMap.get(user).showInfoWindow();
 
-
-        bla(user);
-
-        /*
-        map.setOnMarkerClickListener(
-                new GoogleMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker) {
-                        return false;
-                    }
-                }
-        );
-        */
-    }
-    public void bla(String user){
-
-        builder = new AlertDialog.Builder(this);
-        builder.setMessage("Do you want to call " + user + "?")
-                .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //Do if yes
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
+        //Only shows one, may redo with other icon
+        //usersOnMap.get(user).showInfoWindow();
 
         map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-
             public void onInfoWindowClick(Marker mark) {
+                builder = new AlertDialog.Builder(context);
+                builder.setMessage(mark.getTitle())
+                        .setCancelable(true)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //Do if yes
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
                 AlertDialog alert = builder.create();
                 alert.show();
             }
         });
     }
-
     public void updateMarker(String user, LatLng latLng){
         UserOnMap userOnMap = userLocations.get(user);
 
     }
 
     public void removeMarker(String user){ //remove user from
+        usersOnMap.get(user).remove();
 
     }
 
@@ -163,5 +142,29 @@ public class MapActivity extends FragmentActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if( mListener != null )
+        {
+            mListener.onLocationChanged( location );
+
+            //Move the camera to the user's location once it's available!
+            map.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+            //map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+        }
+
+        //map.animateCamera(CameraUpdateFactory.zoomTo(16));
+    }
+
+    @Override
+    public void activate(OnLocationChangedListener onLocationChangedListener) {
+        mListener = onLocationChangedListener;
+    }
+
+    @Override
+    public void deactivate() {
+        mListener = null;
     }
 }
