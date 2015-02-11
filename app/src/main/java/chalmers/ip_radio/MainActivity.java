@@ -22,7 +22,6 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
     public void map2(View view){
-        Intent intent = new Intent(this, MapActivity2.class);
-        startActivity(intent);
+
     }
 }
