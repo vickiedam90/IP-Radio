@@ -8,6 +8,8 @@ import android.view.*;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import chalmers.ip_radio.VoIP.TalkActivity;
+
 
 public class MainActivity extends Activity {
 
@@ -22,6 +24,7 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
     public void map2(View view){
-
+        Intent intent = new Intent(this, TalkActivity.class);
+        startActivity(intent);
     }
 }
