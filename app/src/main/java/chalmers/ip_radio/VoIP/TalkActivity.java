@@ -36,7 +36,7 @@ import chalmers.ip_radio.R;
 /**
  * Created by Vivi on 2015-01-30.
  */
-public class TalkActivity extends Activity implements View.OnTouchListener {
+public class TalkActivity extends FragmentActivity implements View.OnTouchListener {
     public SipManager manager = null;
     public SipProfile profile = null;
     public String sipAddress = null;
