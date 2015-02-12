@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.net.sip.SipAudioCall;
@@ -17,15 +18,18 @@ import android.net.sip.SipManager;
 import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -42,6 +46,11 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
     public String sipAddress = null;
     public SipAudioCall call = null;
     public IncomingCallReceiver callReceiver;
+  //  final Context context = this;
+    private String username = "";
+    private String domain = "";
+    private String password = "";
+
 
     private static final int CALL_ADDRESS = 1;
     private static final int SET_AUTH_INFO = 2;
@@ -112,19 +121,8 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
             closeLocalProfile();
         }
 
-        //Store private primitive data in key-value pairs.
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(getBaseContext());
-        String username = prefs.getString("namePref", "");
-        String domain = prefs.getString("domainPref", "");
-        String password = prefs.getString("passPref", "");
-        Log.v("username", username);
-        Log.v("domain", domain);
-        Log.v("password", password);
-
-        if (username.length() == 0 || domain.length() == 0
-                || password.length() == 0) {
-            showDialog(UPDATE_SETTINGS_DIALOG);
+        if(username.equals("") || domain.equals("") ||password.equals("")){
+            getPrompt();
             return;
         }
         try {
@@ -277,19 +275,22 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
+     //   MenuInflater inflater = getMenuInflater();
+     //   inflater.inflate(R.menu.sip_activity_settings, menu);
         menu.add(0, CALL_ADDRESS, 0, "Call someone");
         menu.add(0, SET_AUTH_INFO, 0, "Edit your SIP Info.");
         menu.add(0, HANG_UP, 0, "End Current Call.");
+     //   return super.onCreateOptionsMenu(menu);
         return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case CALL_ADDRESS:
-                showDialog(CALL_ADDRESS);
+                setReceiver("");
                 break;
             case SET_AUTH_INFO:
-                updatePreferences();
+                getPrompt();
                 break;
             case HANG_UP:
                 if(call != null) {
@@ -306,55 +307,83 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
         return true;
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case CALL_ADDRESS:
-                LayoutInflater factory = LayoutInflater.from(this);
-                final View textBoxView = factory.inflate(R.layout.call_address_dialog, null);
-                return new AlertDialog.Builder(this)
-                        .setTitle("Call Someone.")
-                        .setView(textBoxView)
-                        .setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int whichButton) {
-                                        EditText textField = (EditText)
-                                                (textBoxView.findViewById(R.id.calladdress_edit));
-                                        sipAddress = textField.getText().toString();
-                                        initCall();
-                                    }
-                                })
-                        .setNegativeButton(
-                                android.R.string.cancel, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int whichButton) {
-// Noop.
-                                    }
-                                })
-                        .create();
-            case UPDATE_SETTINGS_DIALOG:
-                return new AlertDialog.Builder(this)
-                        .setMessage("Please update your SIP Account Settings.")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                updatePreferences();
-                            }
-                        })
-                        .setNegativeButton(
-                                android.R.string.cancel, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int whichButton) {
-// Noop.
-                                    }
-                                })
-                        .create();
+    public void setReceiver(String receiverAddr){
+        if(receiverAddr.isEmpty()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Call address");
+            // Set up the input
+            final EditText addr = new EditText(this);
+            addr.setHint("Call address");
+            addr.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+            builder.setView(addr);
+
+// Set up the buttons
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    sipAddress = addr.getText().toString();
+                    initCall();
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
         }
-        return null;
+        else{
+            sipAddress = receiverAddr;
+            initCall();
+        }
     }
 
-    public void updatePreferences() {
-        Intent settingsActivity = new Intent(getBaseContext(),
-                SipSettings.class);
-        startActivity(settingsActivity);
-    }
+    private void getPrompt(){
+        // get prompts.xml view
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Sip Settings");
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL); //1 is for vertical orientation
+
+// Set up the input
+        final EditText username_input = new EditText(this);
+        final EditText domain_input = new EditText(this);
+        final EditText password_input = new EditText(this);
+        layout.addView(username_input);
+        layout.addView(password_input);
+        layout.addView(domain_input);
+
+        username_input.setHint("username");
+        password_input.setHint("password");
+        domain_input.setHint("domain");
+        username_input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+        domain_input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+        password_input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        builder.setView(layout);
+
+// Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                username = username_input.getText().toString();
+                domain = domain_input.getText().toString();
+                password = password_input.getText().toString();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
+        }
+
 
     /**
      * Updates whether or not the user's voice is muted, depending on whether the button is pressed.

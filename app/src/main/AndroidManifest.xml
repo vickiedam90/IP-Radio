@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.USE_SIP" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <uses-feature
         android:name="android.hardware.sip.voip" android:required="true" />
@@ -28,7 +29,7 @@
         android:name=".IncomingCallReceiver"
         android:label="Call Receiver" />
 
-    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
 
     <application
         android:allowBackup="true"
@@ -66,14 +67,7 @@
         </intent-filter>
 
         </activity>
-        <activity
-            android:name=".VoIP.SipSettings"
-            android:label="set_preferences" >
-        </activity>
-        <activity
-            android:name=".MapActivity2"
-            android:label="@string/title_activity_map_activity2" >
-        </activity>
+
     </application>
 
 </manifest>
