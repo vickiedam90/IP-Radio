@@ -1,5 +1,6 @@
 package chalmers.ip_radio.VoIP;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,6 +19,7 @@ import android.net.sip.SipManager;
 import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -40,7 +42,7 @@ import chalmers.ip_radio.R;
 /**
  * Created by Vivi on 2015-01-30.
  */
-public class TalkActivity extends FragmentActivity implements View.OnTouchListener {
+public class TalkActivity extends ActionBarActivity implements View.OnTouchListener {
     public SipManager manager = null;
     public SipProfile profile = null;
     public String sipAddress = null;
@@ -75,6 +77,7 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
 
         //to keep the screen constantly on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        ActionBar actionBar = getActionBar();
         initManager();
     }
 
@@ -207,7 +210,7 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
                     // if (call.isMuted()) {
                     // call.toggleMute();
                     // }
-                    call.toggleMute();
+                   // call.toggleMute();
                     updateStatus(call, 2);
                 }
                 @Override
@@ -277,31 +280,35 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
     public boolean onCreateOptionsMenu(Menu menu) {
      //   MenuInflater inflater = getMenuInflater();
      //   inflater.inflate(R.menu.sip_activity_settings, menu);
-        menu.add(0, CALL_ADDRESS, 0, "Call someone");
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_settings, menu);
+
+      /* menu.add(0, CALL_ADDRESS, 0, "Call someone");
         menu.add(0, SET_AUTH_INFO, 0, "Edit your SIP Info.");
-        menu.add(0, HANG_UP, 0, "End Current Call.");
-     //   return super.onCreateOptionsMenu(menu);
-        return true;
+        menu.add(0, HANG_UP, 0, "End Current Call.");*/
+        return super.onCreateOptionsMenu(menu);
+
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case CALL_ADDRESS:
-                setReceiver("");
-                break;
-            case SET_AUTH_INFO:
+
+            case R.id.sipsetting_compose:
                 getPrompt();
                 break;
+            case R.id.call_compose:
+                setReceiver("");
+                break;
+
+            /*case CALL_ADDRESS:
+                setReceiver("");
+                break;
+          /*  case SET_AUTH_INFO:
+                getPrompt();
+                break;*/
             case HANG_UP:
-                if(call != null) {
-                    try {
-                        call.endCall();
-                    } catch (SipException se) {
-                        Log.d("WalkieTalkieActivity/onOptionsItemSelected",
-                                "Error ending call.", se);
-                    }
-                    call.close();
-                }
+                endCall();
                 break;
         }
         return true;
@@ -384,6 +391,17 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
 
         }
 
+    private void endCall(){
+        if(call != null) {
+            try {
+                call.endCall();
+            } catch (SipException se) {
+                Log.d("WalkieTalkieActivity/onOptionsItemSelected",
+                        "Error ending call.", se);
+            }
+            call.close();
+        }
+    }
 
     /**
      * Updates whether or not the user's voice is muted, depending on whether the button is pressed.
@@ -394,13 +412,13 @@ public class TalkActivity extends FragmentActivity implements View.OnTouchListen
      */
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (call == null) {
+       /* if (call == null) {
             return false;
         } else if (event.getAction() == MotionEvent.ACTION_DOWN && call != null && call.isMuted()) {
             call.toggleMute();
         } else if (event.getAction() == MotionEvent.ACTION_UP && !call.isMuted()) {
             call.toggleMute();
-        }
+        }*/
         return false;
     }
 }

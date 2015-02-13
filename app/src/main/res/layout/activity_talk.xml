@@ -13,7 +13,9 @@ limitations under the License.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:background="@drawable/black">
+
     <RelativeLayout android:padding="12dp"
         android:id="@+id/mainlayout"
         android:orientation="vertical"
@@ -25,6 +27,7 @@ limitations under the License.
             android:layout_height="fill_parent"
             android:layout_centerHorizontal="true"
             android:textAppearance="?android:attr/textAppearanceLarge"
+
             />
         <ToggleButton
             android:layout_height="300dp"
