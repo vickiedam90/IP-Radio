@@ -29,7 +29,15 @@ limitations under the License.
             android:textAppearance="?android:attr/textAppearanceLarge"
 
             />
-        <ToggleButton
+        <Button
+            android:id="@+id/hangUp"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/btn_hang_up"
+            android:onClick="endCall"/>
+       <!-- <ToggleButton
             android:layout_height="300dp"
             android:layout_width="300dp"
             android:text="talk"
@@ -40,5 +48,6 @@ limitations under the License.
             android:textOff=""
             android:textOn=""
             android:layout_marginTop="-20dp" />
+            -->
     </RelativeLayout>
 </FrameLayout>

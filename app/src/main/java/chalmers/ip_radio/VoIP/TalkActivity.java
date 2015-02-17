@@ -1,35 +1,29 @@
 package chalmers.ip_radio.VoIP;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.Fragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.net.sip.SipAudioCall;
 import android.net.sip.SipException;
 import android.os.Bundle;
 
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.sip.SipManager;
 import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -42,30 +36,34 @@ import chalmers.ip_radio.R;
 /**
  * Created by Vivi on 2015-01-30.
  */
-public class TalkActivity extends ActionBarActivity implements View.OnTouchListener {
+public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchListener {
     public SipManager manager = null;
     public SipProfile profile = null;
     public String sipAddress = null;
     public SipAudioCall call = null;
     public IncomingCallReceiver callReceiver;
-  //  final Context context = this;
-    private String username = "";
-    private String domain = "";
-    private String password = "";
+  //  private String username = "vivi";
+ // private String password = "FewJkWMpUGpBmnv4";
+    private String username = "magkal";
+    private String password = "sRvduQbzKuxVJovL";
+    private String domain = "getonsip.com";
+    private String outProxy = "sip.onsip.com";
 
 
-    private static final int CALL_ADDRESS = 1;
+ /*   private static final int CALL_ADDRESS = 1;
     private static final int SET_AUTH_INFO = 2;
     private static final int UPDATE_SETTINGS_DIALOG = 3;
     private static final int HANG_UP = 4;
-
+*/
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talk);
-        ToggleButton pushToTalkButton = (ToggleButton) findViewById(R.id.pushToTalk);
-        pushToTalkButton.setOnTouchListener(this);
+        //ToggleButton pushToTalkButton = (ToggleButton) findViewById(R.id.pushToTalk);
+        //Button hangUp = (Button) findViewById(R.id.hangUp);
+
+       // pushToTalkButton.setOnTouchListener(this);
 
         // Set up the intent filter. This will be used to fire an
         // IncomingCallReceiver when someone calls the SIP address used by this
@@ -77,7 +75,7 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
 
         //to keep the screen constantly on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        ActionBar actionBar = getActionBar();
+       // ActionBar actionBar = getActionBar();
         initManager();
     }
 
@@ -124,7 +122,8 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
             closeLocalProfile();
         }
 
-        if(username.equals("") || domain.equals("") ||password.equals("")){
+        if(username.equals("") || domain.equals("") ||password.equals("") || outProxy.equals("")){
+            Log.d("","username or domain or pass or proxy is empty");
             getPrompt();
             return;
         }
@@ -134,6 +133,9 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
             SipProfile.Builder builder = new SipProfile.Builder(username,
                     domain);
             builder.setPassword(password);
+            builder.setOutboundProxy(outProxy);
+            builder.setDisplayName(username);
+            builder.setAuthUserName("getonsip_" + username);
             profile = builder.build();
             Log.v("profile", profile + " get velus");
 
@@ -216,6 +218,7 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
                 @Override
                 public void onCallEnded(SipAudioCall call) {
                     updateStatus("Call End"); //can be replaced
+
                     //
                 }
             };
@@ -252,6 +255,7 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
         this.runOnUiThread(new Runnable() {
             public void run() {
                  TextView labelView = (TextView) findViewById(R.id.sipLabel);
+                 labelView.setTextColor(Color.WHITE);
                  labelView.setText(status);
             }
         });
@@ -295,6 +299,7 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
         switch (item.getItemId()) {
 
             case R.id.sipsetting_compose:
+                Log.d("","onOptionsItemSelected");
                 getPrompt();
                 break;
             case R.id.call_compose:
@@ -306,10 +311,10 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
                 break;
           /*  case SET_AUTH_INFO:
                 getPrompt();
-                break;*/
+                break;
             case HANG_UP:
                 endCall();
-                break;
+                break; */
         }
         return true;
     }
@@ -352,23 +357,26 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
         builder.setTitle("Sip Settings");
 
         LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL); //1 is for vertical orientation
+        layout.setOrientation(LinearLayout.VERTICAL);
 
-// Set up the input
+        // Set up the input
         final EditText username_input = new EditText(this);
         final EditText domain_input = new EditText(this);
         final EditText password_input = new EditText(this);
+        final EditText outBoundProxy_input = new EditText(this);
         layout.addView(username_input);
         layout.addView(password_input);
         layout.addView(domain_input);
+        layout.addView(outBoundProxy_input);
 
         username_input.setHint("username");
         password_input.setHint("password");
         domain_input.setHint("domain");
+        outBoundProxy_input.setHint("outBoundProxy");
         username_input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
         domain_input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
         password_input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-
+        outBoundProxy_input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
         builder.setView(layout);
 
 // Set up the buttons
@@ -378,6 +386,8 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
                 username = username_input.getText().toString();
                 domain = domain_input.getText().toString();
                 password = password_input.getText().toString();
+                outProxy = outBoundProxy_input.getText().toString();
+                initManager();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -391,7 +401,7 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
 
         }
 
-    private void endCall(){
+    public void endCall(View view){
         if(call != null) {
             try {
                 call.endCall();
@@ -400,7 +410,10 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
                         "Error ending call.", se);
             }
             call.close();
+            updateStatus("Call ended");
         }
+        else
+            updateStatus("No call ongoing");
     }
 
     /**
@@ -410,7 +423,7 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
      * @return boolean Returns false to indicate that the parent view should handle the touch event
      * as it normally would.
      */
-    @Override
+  /*  @Override
     public boolean onTouch(View v, MotionEvent event) {
        /* if (call == null) {
             return false;
@@ -418,7 +431,7 @@ public class TalkActivity extends ActionBarActivity implements View.OnTouchListe
             call.toggleMute();
         } else if (event.getAction() == MotionEvent.ACTION_UP && !call.isMuted()) {
             call.toggleMute();
-        }*/
+        }
         return false;
-    }
+    }*/
 }
