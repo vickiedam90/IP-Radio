@@ -1,6 +1,7 @@
 package chalmers.ip_radio;
 
 import chalmers.ip_radio.VoIP.*;
+import chalmers.ip_radio.Traccar.*;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -38,6 +39,7 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -67,6 +69,12 @@ public class MapActivity extends FragmentActivity implements
     private GoogleApiClient googleApiClient;
     private boolean requestingLocationUpdates = true;
     private LocationRequest locationRequest;
+    private TelephonyManager telephonyManager;
+
+    private ClientController clientController;
+    private String id;
+    private final int port = 5005;
+    private String address = "192.168.38.100";
 
     private TextView tv1, tv2;
 
@@ -91,9 +99,16 @@ public class MapActivity extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         resolvingError = savedInstanceState != null && savedInstanceState.getBoolean(STATE_RESOLVING_ERROR, false);
         setContentView(R.layout.activity_map);
-        tv1 = (Button) findViewById(R.id.tv1);
-        tv2 = (Button) findViewById(R.id.tv2);
+
+        tv1 = (TextView) findViewById(R.id.tv1);
+        tv2 = (TextView) findViewById(R.id.tv2);
+
         initiateMap();
+
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        id = telephonyManager.getDeviceId();
+        clientController = new ClientController(this, address, port, Protocol.createLoginMessage(id));
+        clientController.start();
 
         if(googleApiClient == null){
             Log.d("GoogleAPIClient = NULL","=================");
@@ -104,6 +119,8 @@ public class MapActivity extends FragmentActivity implements
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+
     }
 
     @Override
@@ -117,6 +134,7 @@ public class MapActivity extends FragmentActivity implements
     protected void onStop() {
         Log.d("onStop","%%%%%%%%%%");
         googleApiClient.disconnect();
+
         super.onStop();
     }
     @Override
@@ -131,10 +149,18 @@ public class MapActivity extends FragmentActivity implements
             startLocationUpdates();
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        if (clientController != null)
+            clientController.stop();
+        super.onDestroy();
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        Log.d("ON CONF CHANGED","%%%%%%%%%%%%%%%%%%%");
+        Log.d("ON CONF CHANGED", "%%%%%%%%%%%%%%%%%%%");
         //setContentView(R.layout.activity_map);
     }
     protected void startLocationUpdates() {
@@ -232,25 +258,26 @@ public class MapActivity extends FragmentActivity implements
     public void updateMarker(String user, LatLng latLng){
         usersOnMap.get(user).setPosition(latLng);
     }
-    public void sendMyLocation(){
-
+    public void sendMyLocation(Location location){
+        clientController.setNewLocation(Protocol.createLocationMessage(location));
     }
     public void removeMarker(String user){ //remove user from
        usersOnMap.get(user).remove();
     }
+
     public void onLocationChanged(Location location) {
-        Log.d("on location changed","%%%%%%%%%%%%%%%%%%%");
-        if(location == null)
-            Log.d("onLocationChanged location", "NULL");
-        tv1.setText(String.valueOf(location.getLatitude()));
-        tv2.setText(String.valueOf(location.getLongitude()));
+        Log.d("on location changed", "%%%%%%%%%%%%%%%%%%%");
+        if(location != null) {
+            tv2.setText("Lati: "+String.valueOf(location.getLatitude()));
+            tv1.setText("Long: "+String.valueOf(location.getLongitude())+"  ");
 
+            myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+            map.animateCamera(CameraUpdateFactory.newLatLng(myLatLng));
 
-        myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        map.animateCamera(CameraUpdateFactory.newLatLng(myLatLng));
-        //map.animateCamera(CameraUpdateFactory.zoomTo(14));
-        //map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
-        //map.animateCamera(CameraUpdateFactory.zoomTo(16));
+            sendMyLocation(location);
+        }
+        else{Log.d("onLocationChanged location", "NULL");}
+
     }
     @Override
     public void activate(OnLocationChangedListener listener){
@@ -330,7 +357,7 @@ public class MapActivity extends FragmentActivity implements
             showErrorDialog(result.getErrorCode());
             resolvingError = true;
         }
-        Log.d("ON CONNECTION FAILED%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%","%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        Log.d("ON CONNECTION FAILED%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
     }
     private Location bestLastKnownLocation(float minAccuracy, long minTime) {
         Location bestResult = null;
