@@ -29,7 +29,7 @@ public class IncomingCallReceiver extends BroadcastReceiver {
                 @Override
                 public void onRinging(SipAudioCall call, SipProfile caller) {
                     try {
-                        call.answerCall(30);
+                        call.answerCall(300);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -37,7 +37,7 @@ public class IncomingCallReceiver extends BroadcastReceiver {
             };
             TalkActivity talkActivity = (TalkActivity) context;
             incomingCall = talkActivity.manager.takeAudioCall(intent, listener);
-            incomingCall.answerCall(30);
+            incomingCall.answerCall(3000);
             incomingCall.startAudio();
             incomingCall.setSpeakerMode(true);
 
