@@ -42,12 +42,12 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
     public String sipAddress = null;
     public SipAudioCall call = null;
     public IncomingCallReceiver callReceiver;
-    private String username = "vivi";
-  private String password = "FewJkWMpUGpBmnv4";
- //   private String username = "magkal";
- //   private String username = "vicki";
+   // private String username = "vivi";
+  //private String password = "FewJkWMpUGpBmnv4";
+   private String username = "magkal";
+  //  private String username = "vicki";
   //  private String password = "1234";
- //   private String password = "sRvduQbzKuxVJovL";
+   private String password = "sRvduQbzKuxVJovL";
 //    private String domain = "192.168.38.100";
     private String domain = "getonsip.com";
     private String outProxy = "sip.onsip.com";
@@ -56,7 +56,9 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
 //       private String domain = "sip2sip.info";
 //       private String outProxy = "proxy.sipthor.net";
 
+    //Used for calls from MapActivity
     private boolean waitingCall = false;
+    private String toCall;
 
  /*   private static final int CALL_ADDRESS = 1;
     private static final int SET_AUTH_INFO = 2;
@@ -68,6 +70,7 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talk);
+        getExtra();
         //ToggleButton pushToTalkButton = (ToggleButton) findViewById(R.id.pushToTalk);
         //Button hangUp = (Button) findViewById(R.id.hangUp);
 
@@ -85,7 +88,7 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
        // ActionBar actionBar = getActionBar();
         initManager();
-        getExtra();
+
     }
 
     @Override
@@ -146,7 +149,7 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
             SipProfile.Builder builder = new SipProfile.Builder(username,
                     domain);
             builder.setPassword(password);
-       //     builder.setOutboundProxy(outProxy);
+            builder.setOutboundProxy(outProxy);
             builder.setDisplayName(username);
             builder.setAuthUserName("getonsip_" + username);
             builder.setAutoRegistration(true);
@@ -173,8 +176,12 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
                         }
                         public void onRegistrationDone(String localProfileUri, long expiryTime) {
                             updateStatus("Ready");
-                            if(waitingCall)
+
+                            if(waitingCall) {
+                                waitingCall = false;
                                 setReceiver(toCall);
+                            }
+
                         }
                         public void onRegistrationFailed(
                                 String localProfileUri, int errorCode,
@@ -459,13 +466,14 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
     }*/
 
     private void getExtra(){
-
+        Bundle b = new Bundle();
         Intent i = getIntent();
-        Bundle b = i.getExtras();
-
-        if(b != null){
-            setReceiver((String) b.get("STRING_I_NEED"));
-            waiting
+        if(i != null) {
+            b = i.getExtras();
+            if(b != null) {
+                toCall = (String) b.get("STRING_I_NEED");
+                waitingCall = true;
+            }
         }
 
         /*

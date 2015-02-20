@@ -239,7 +239,7 @@ public class MapActivity extends FragmentActivity implements
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 //Should call that person
-                                Intent i = new Intent(context, TalkActivity.class);
+                                Intent i = new Intent(MapActivity.this, TalkActivity.class);
                                 i.putExtra("STRING_I_NEED", "vivi@getonsip.com");
                                 startActivity(i);
                                 //talkActivity.setReceiver("vivi@getonsip.com");
