@@ -42,12 +42,16 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
     public String sipAddress = null;
     public SipAudioCall call = null;
     public IncomingCallReceiver callReceiver;
-  //  private String username = "vivi";
+ //   private String username = "vivi";
  // private String password = "FewJkWMpUGpBmnv4";
     private String username = "magkal";
     private String password = "sRvduQbzKuxVJovL";
     private String domain = "getonsip.com";
     private String outProxy = "sip.onsip.com";
+//       private String username = "xxx123";
+//       private String password = "mewmew";
+//       private String domain = "sip2sip.info";
+//       private String outProxy = "proxy.sipthor.net";
 
 
  /*   private static final int CALL_ADDRESS = 1;
@@ -105,7 +109,9 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
     public void initManager(){
         if(manager == null)
             manager = SipManager.newInstance(this);
+        Log.d("Initmanager","initmanager");
         initProfile();
+
     }
 
     /**
@@ -114,11 +120,12 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
      */
     public void initProfile(){
         if (manager == null) {
+            Log.d("Manager", "manager is null");
             return;
         }
-        Log.v("profile", profile + " get velus");
+        Log.d("profile", profile + " get velus");
         if (profile != null) {
-            Log.v("call closeLocalProfile", "call closeLocalProfile");
+            Log.d("call closeLocalProfile", "call closeLocalProfile");
             closeLocalProfile();
         }
 
@@ -128,7 +135,8 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
             return;
         }
         try {
-            // Log.v("SipProfile.Builder", "SipProfile.Builder");
+            Log.d("SipProfile.Builder", "SipProfile.Builder");
+
             //Creating SipProfile
             SipProfile.Builder builder = new SipProfile.Builder(username,
                     domain);
@@ -136,8 +144,11 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
             builder.setOutboundProxy(outProxy);
             builder.setDisplayName(username);
             builder.setAuthUserName("getonsip_" + username);
+            builder.setAutoRegistration(true);
+            //builder.setSendKeepAlive(true);
             profile = builder.build();
             Log.v("profile", profile + " get velus");
+            Log.d("profile", profile + " get velus");
 
             //The following code excerpt opens the local profile for making calls and/or receiving generic SIP calls.
             Intent i = new Intent();
