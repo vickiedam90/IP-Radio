@@ -65,11 +65,12 @@ public class MapActivity extends FragmentActivity implements
     private Context context = this;
     private AlertDialog.Builder builder;
     private OnLocationChangedListener listener;
-    private FusedLocationProviderApi fusedLocationProviderApi = LocationServices.FusedLocationApi;
     private GoogleApiClient googleApiClient;
     private boolean requestingLocationUpdates = true;
     private LocationRequest locationRequest;
     private TelephonyManager telephonyManager;
+    private boolean markerPressed;
+    private Marker lastPressedMarker;
 
     private ClientController clientController;
     private String id;
@@ -100,6 +101,7 @@ public class MapActivity extends FragmentActivity implements
         resolvingError = savedInstanceState != null && savedInstanceState.getBoolean(STATE_RESOLVING_ERROR, false);
         setContentView(R.layout.activity_map);
 
+        markerPressed = false;
         tv1 = (TextView) findViewById(R.id.tv1);
         tv2 = (TextView) findViewById(R.id.tv2);
 
@@ -110,9 +112,7 @@ public class MapActivity extends FragmentActivity implements
         clientController = new ClientController(this, address, port, Protocol.createLoginMessage(id));
         clientController.start();
 
-        if(googleApiClient == null){
-            Log.d("GoogleAPIClient = NULL","=================");
-        }
+
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -120,7 +120,9 @@ public class MapActivity extends FragmentActivity implements
                 .addOnConnectionFailedListener(this)
                 .build();
 
-
+        if(googleApiClient == null){
+            Log.d("GoogleAPIClient = NULL","=================");
+        }
     }
 
     @Override
@@ -199,6 +201,8 @@ public class MapActivity extends FragmentActivity implements
             map.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
                 @Override
                 public boolean onMyLocationButtonClick() {
+                    if(lastPressedMarker != null)
+                        lastPressedMarker.hideInfoWindow();
                     startLocationUpdates();
                     return false;
                 }
@@ -221,7 +225,8 @@ public class MapActivity extends FragmentActivity implements
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                stopLocationUpdates();
+                lastPressedMarker = marker;
+                //stopLocationUpdates();
                 return false;
             }
         });
@@ -234,7 +239,10 @@ public class MapActivity extends FragmentActivity implements
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 //Should call that person
-                                //TalkActivity ta = new TalkActivity();
+                                Intent i = new Intent(context, TalkActivity.class);
+                                i.putExtra("STRING_I_NEED", "vivi@getonsip.com");
+                                startActivity(i);
+                                //talkActivity.setReceiver("vivi@getonsip.com");
                                 //ta.initCall();
                             }
                         })
@@ -265,15 +273,20 @@ public class MapActivity extends FragmentActivity implements
        usersOnMap.get(user).remove();
     }
 
+    /**
+     *
+     * @param location
+     */
     public void onLocationChanged(Location location) {
         Log.d("on location changed", "%%%%%%%%%%%%%%%%%%%");
         if(location != null) {
             tv2.setText("Lati: "+String.valueOf(location.getLatitude()));
             tv1.setText("Long: "+String.valueOf(location.getLongitude())+"  ");
 
-            myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-            map.animateCamera(CameraUpdateFactory.newLatLng(myLatLng));
-
+            if(lastPressedMarker != null && !lastPressedMarker.isInfoWindowShown()) {
+                myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                map.animateCamera(CameraUpdateFactory.newLatLng(myLatLng));
+            }
             sendMyLocation(location);
         }
         else{Log.d("onLocationChanged location", "NULL");}
@@ -311,11 +324,17 @@ public class MapActivity extends FragmentActivity implements
             //Starts requesting location updates
             startLocationUpdates();
         }
+        if(googleApiClient == null)
+            Log.d("CLIENT NULL", "%%%%%%%%%%%%%%%");
         myLastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (myLastLocation != null) {
             Log.d("INSIDE %%%%%%%%%%%%%%%%%%%","");
             myLatLng = new LatLng(myLastLocation.getLatitude(), myLastLocation.getLongitude());
+            myLatLng1 = new LatLng(myLastLocation.getLatitude() + 0.005, myLastLocation.getLongitude()+ 0.005);
+            myLatLng2 = new LatLng(myLastLocation.getLatitude() - 0.005, myLastLocation.getLongitude() - 0.005);
             addMarker("User1", myLatLng);
+            addMarker("User2", myLatLng1);
+            addMarker("User3", myLatLng2);
             try {
                 map.moveCamera(CameraUpdateFactory.newLatLng(myLatLng));
                 map.animateCamera(CameraUpdateFactory.zoomTo(14));

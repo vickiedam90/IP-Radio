@@ -53,6 +53,7 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
 //       private String domain = "sip2sip.info";
 //       private String outProxy = "proxy.sipthor.net";
 
+    private boolean waitingCall = false;
 
  /*   private static final int CALL_ADDRESS = 1;
     private static final int SET_AUTH_INFO = 2;
@@ -81,6 +82,7 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
        // ActionBar actionBar = getActionBar();
         initManager();
+        getExtra();
     }
 
     @Override
@@ -166,9 +168,10 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
                         public void onRegistering(String localProfileUri) {
                             updateStatus("Registering with SIP Server...");
                         }
-                        public void onRegistrationDone(String localProfileUri,
-                                                       long expiryTime) {
+                        public void onRegistrationDone(String localProfileUri, long expiryTime) {
                             updateStatus("Ready");
+                            if(waitingCall)
+                                setReceiver(toCall);
                         }
                         public void onRegistrationFailed(
                                 String localProfileUri, int errorCode,
@@ -445,4 +448,31 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
         }
         return false;
     }*/
+
+    private void getExtra(){
+
+        Intent i = getIntent();
+        Bundle b = i.getExtras();
+
+        if(b != null){
+            setReceiver((String) b.get("STRING_I_NEED"));
+            waiting
+        }
+
+        /*
+        String newString ="";
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                newString = null;
+            } else {
+                newString = extras.getString("STRING_I_NEED");
+                setReceiver(newString);
+            }
+        } else {
+            newString = (String) savedInstanceState.getSerializable("STRING_I_NEED");
+            setReceiver(newString);
+        }
+        */
+    }
 }
