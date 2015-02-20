@@ -42,10 +42,13 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
     public String sipAddress = null;
     public SipAudioCall call = null;
     public IncomingCallReceiver callReceiver;
- //   private String username = "vivi";
- // private String password = "FewJkWMpUGpBmnv4";
-    private String username = "magkal";
-    private String password = "sRvduQbzKuxVJovL";
+    private String username = "vivi";
+  private String password = "FewJkWMpUGpBmnv4";
+ //   private String username = "magkal";
+ //   private String username = "vicki";
+  //  private String password = "1234";
+ //   private String password = "sRvduQbzKuxVJovL";
+//    private String domain = "192.168.38.100";
     private String domain = "getonsip.com";
     private String outProxy = "sip.onsip.com";
 //       private String username = "xxx123";
@@ -143,7 +146,7 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
             SipProfile.Builder builder = new SipProfile.Builder(username,
                     domain);
             builder.setPassword(password);
-            builder.setOutboundProxy(outProxy);
+       //     builder.setOutboundProxy(outProxy);
             builder.setDisplayName(username);
             builder.setAuthUserName("getonsip_" + username);
             builder.setAutoRegistration(true);
@@ -231,7 +234,13 @@ public class TalkActivity extends ActionBarActivity{ //implements View.OnTouchLi
                 }
                 @Override
                 public void onCallEnded(SipAudioCall call) {
-                    updateStatus("Call End"); //can be replaced
+             //       try {
+             //           call.endCall();
+                        updateStatus("Call End"); //can be replaced
+             //       } catch (SipException e) {
+             //           e.printStackTrace();
+             //       }
+
 
                     //
                 }
