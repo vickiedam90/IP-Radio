@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.sip.SipAudioCall;
 import android.net.sip.SipException;
 import android.net.sip.SipProfile;
+import android.util.Log;
 
 /**
  * Created by Vivi on 2015-01-30.
@@ -41,8 +42,12 @@ public class IncomingCallReceiver extends BroadcastReceiver {
             incomingCall.setSpeakerMode(true);
 
             talkActivity.call = incomingCall;
+            talkActivity.updateStatus(incomingCall, 1);
         } catch (SipException e) {
-            e.printStackTrace();
+            if (incomingCall != null) {
+                incomingCall.close();
+                Log.d("end call", "incoming call");
+            }
         }
 
     }
