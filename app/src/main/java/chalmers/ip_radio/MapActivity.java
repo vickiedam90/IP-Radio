@@ -20,33 +20,31 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
+
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.res.Configuration;
-import android.location.Location;
-import android.net.Uri;
-import android.os.Bundle;
-
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
-import android.location.LocationProvider;
-import android.support.v4.app.FragmentActivity;
+
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v4.app.FragmentActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Button;
+import android.view.KeyEvent;
 import android.widget.TextView;
 
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class MapActivity extends FragmentActivity implements
         LocationListener,
@@ -60,7 +58,6 @@ public class MapActivity extends FragmentActivity implements
     private Location myLocation, location, myLastLocation;
     private LatLng myLatLng, myLatLng1, myLatLng2;
     private LocationManager locationManager;
-    private HashMap<String, UserOnMap> userLocations; //How too keep multiple user locations?
     private HashMap<String, Marker> usersOnMap = new HashMap<String, Marker>();
     private Context context = this;
     private AlertDialog.Builder builder;
@@ -101,6 +98,10 @@ public class MapActivity extends FragmentActivity implements
         resolvingError = savedInstanceState != null && savedInstanceState.getBoolean(STATE_RESOLVING_ERROR, false);
         setContentView(R.layout.activity_map);
 
+        isGPSEnable();
+
+        Log.d("ON CREATE222","=================");
+
         markerPressed = false;
         tv1 = (TextView) findViewById(R.id.tv1);
         tv2 = (TextView) findViewById(R.id.tv2);
@@ -125,37 +126,78 @@ public class MapActivity extends FragmentActivity implements
         }
     }
 
+    public void isGPSEnable(){
+
+        LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
+        boolean GPSenabled = service.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean NETenabled = service.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        if (!NETenabled || !GPSenabled) {
+            buildAlertMessageNoGps();
+        }
+
+    }
+    private  void buildAlertMessageNoGps()    {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("You must enable GPS from both GPS and network sources for the app to work as intended, would you like to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Enable GPS",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int id) {
+                                Intent callGPSSettingIntent = new Intent(
+                                        android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                        startActivity(callGPSSettingIntent);
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                                Intent intent = new Intent(context, MainActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
     @Override
     protected void onStart() {
+        Log.d("ON START","%%%%%%%%%%");
         super.onStart();
-        if (true) {  // more about this later
+        if (googleApiClient != null) {  // more about this later
             googleApiClient.connect();
         }
     }
     @Override
     protected void onStop() {
-        Log.d("onStop","%%%%%%%%%%");
-        googleApiClient.disconnect();
-
+        Log.d("ON STOP","%%%%%%%%%%");
+        if(googleApiClient != null)
+            googleApiClient.disconnect();
         super.onStop();
     }
     @Override
     protected void onPause() {
+        Log.d("ON PAUSE", "%%%%%%%%%%%%%%%%%%%");
+        if(googleApiClient != null)
+            stopLocationUpdates();
         super.onPause();
-        stopLocationUpdates();
     }
     @Override
     public void onResume() {
-        super.onResume();
-        if (googleApiClient.isConnected() && !requestingLocationUpdates) {
+        Log.d("ON RESUME", "%%%%%%%%%%%%%%%%%%%");
+        if (googleApiClient != null && googleApiClient.isConnected() && !requestingLocationUpdates) {
             startLocationUpdates();
         }
+        super.onResume();
     }
 
     @Override
     protected void onDestroy() {
         if (clientController != null)
             clientController.stop();
+        Log.d("ON DESTROY", "%%%%%%%%%%%%%%%%%%%");
         super.onDestroy();
     }
 
@@ -322,10 +364,12 @@ public class MapActivity extends FragmentActivity implements
         createLocationRequest();
         if(requestingLocationUpdates) {
             //Starts requesting location updates
+            Log.d("Requesting Location Updates","%%%%%%%%%%");
             startLocationUpdates();
         }
         if(googleApiClient == null)
             Log.d("CLIENT NULL", "%%%%%%%%%%%%%%%");
+
         myLastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (myLastLocation != null) {
             Log.d("INSIDE %%%%%%%%%%%%%%%%%%%","");
